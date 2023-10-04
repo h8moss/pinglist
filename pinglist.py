@@ -1,7 +1,8 @@
 import argparse
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup, XMLParsedAsHTMLWarning
 import requests
 from time import sleep
+import warnings
 
 
 def create_parser():
@@ -121,6 +122,9 @@ def get_formatted_data(data, format):
 
 
 def main():
+
+    warnings.filterwarnings('ignore', XMLParsedAsHTMLWarning)
+
     parser = create_parser()
     args = parser.parse_args()
 
