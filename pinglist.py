@@ -1,4 +1,7 @@
 import argparse
+from bs4 import BeautifulSoup
+import requests
+
 
 def create_parser():
   parser = argparse.ArgumentParser(
@@ -55,6 +58,29 @@ def create_parser():
 
   return parser
 
+def get_title(request_body, default_value):
+  parser = BeautifulSoup(request_body, 'html.parser')
+  if parser.title == None:
+    return default_value
+  return parser.title
+
+def show_progress(current, total):
+  divisions = 50
+  progress = round((divisions * current)/total)
+  print('[', end='')
+  for i in range(divisions):
+    if i < progress:
+      print('@', end='')
+    else:
+      print('-', end='')
+  print(f'] - {current}/{total}', end='\r')
+
+  if (current == total):
+    print('')
+
+def display_data(data):
+  print('END')
+
 def main():
   parser = create_parser()
   args = parser.parse_args()
@@ -79,6 +105,37 @@ def main():
         if not line.startswith('http://') and not line.startswith('https://'):
           line = 'http://' + line
         urls.append(line)
+
+  data = []
+  for i in range(len(urls)):
+    url = urls[i]
+    # url, title, status code, status message, server
+    try:
+      r = requests.get(url)
+      title = get_title(r.content, url)
+      status = r.status_code
+      status_message = r.reason
+      server = r.headers.get('Server', "UNKNOWN")
+      content_length = len(r.content if r.content else [])
+    except requests.exceptions.RequestException:
+      title = url
+      status = 0
+      status_message = "could not connect"
+      server = "UNKNOWN"
+      content_length = 0
+
+    data.append({
+      url: url,
+      title: title,
+      status: status,
+      status_message: status_message,
+      server: server,
+      content_length: content_length
+    })
+    if not args.silent:
+      show_progress(i+1, len(urls))
+
+  display_data(data)
   
 if __name__ == '__main__':
   main()
