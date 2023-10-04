@@ -2,7 +2,6 @@ import argparse
 from bs4 import BeautifulSoup
 import requests
 
-
 def create_parser():
   parser = argparse.ArgumentParser(
     prog="PingList", 
@@ -24,13 +23,13 @@ def create_parser():
   )
 
   parser.add_argument('-f', '--format',
-                      choices=['csv', 'list', 'md', 'none'],
+                      choices=['csv', 'list', 'md', 'table', 'none'],
                       default="list",
                       dest="format",
                       help="Format for the program's output",
   )
   parser.add_argument('--output-format',
-                      choices=['csv', 'list', 'md'],
+                      choices=['csv', 'list', 'table', 'md'],
                       default='csv',
                       dest='outputFormat',
                       help='Format for the output file, ignored if --output-file is not passed'
@@ -62,7 +61,7 @@ def get_title(request_body, default_value):
   parser = BeautifulSoup(request_body, 'html.parser')
   if parser.title == None:
     return default_value
-  return parser.title
+  return parser.title.text
 
 def show_progress(current, total):
   divisions = 50
@@ -78,8 +77,43 @@ def show_progress(current, total):
   if (current == total):
     print('')
 
-def display_data(data):
-  print('END')
+def get_formatted_data(data, format):
+  if format == 'none':
+    return ''
+
+  text = ''
+
+  # header
+  if format == 'csv':
+    text += 'Url,Title,Status code,Status message,Server,Content length\n'
+  elif format == 'list':
+    pass # list does not need header
+  elif format == 'md':
+    text += '|Url|Title|Status code|Status message|Server|Content length|\n'
+    text += '|-|-|-|-|-|-|\n'
+  elif format == 'table':
+    text += 'Url\t\t\tTitle\tStatus code\tStatus message\tServer\tContent length\n'
+  else:
+    raise ValueError(f'Unrecognized format: {format}')
+
+  for data_item in data:
+    url = data_item['url']
+    title = data_item['title']
+    status_code = data_item['status']
+    status_message = data_item['status_message']
+    server = data_item['server']
+    content_length = data_item['content_length']
+    if format == 'csv':
+      text += f'{url},{title},{status_code},{status_message},{server},{content_length}\n'
+    elif format == 'list':
+      text += f'- {title} ({url}) ({status_code} {status_message}) {server} {content_length}\n'
+    elif format == 'table':
+      text += f'{url}\t{title}\t{status_code}\t\t{status_message}\t\t{server}\t{content_length}\n'
+    else:
+      text += f'|{url}|{title}|{status_code}|{status_message}|{server}|{content_length}|\n'
+
+  return text
+
 
 def main():
   parser = create_parser()
@@ -109,7 +143,6 @@ def main():
   data = []
   for i in range(len(urls)):
     url = urls[i]
-    # url, title, status code, status message, server
     try:
       r = requests.get(url)
       title = get_title(r.content, url)
@@ -125,17 +158,20 @@ def main():
       content_length = 0
 
     data.append({
-      url: url,
-      title: title,
-      status: status,
-      status_message: status_message,
-      server: server,
-      content_length: content_length
+      'url': url,
+      'title': title,
+      'status': status,
+      'status_message': status_message,
+      'server': server,
+      'content_length': content_length
     })
     if not args.silent:
       show_progress(i+1, len(urls))
 
-  display_data(data)
+  print(get_formatted_data(data, args.format))
+  if args.outputFile != None:
+    with open(args.outputFile, 'w+') as f:
+      f.write(get_formatted_data(data, args.outputFormat))
   
 if __name__ == '__main__':
   main()
