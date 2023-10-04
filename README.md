@@ -23,4 +23,6 @@ The data can be displayed and saved as:
 
 ## usage
 
+![WindowsTerminal_dSNG7FKfc4](https://github.com/h8moss/pinglist/assets/43828996/06f9d229-b28e-4de3-bcd4-ec8144016b02)
+
 ## License
