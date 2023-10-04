@@ -137,8 +137,8 @@ def main():
         for line in lines:
             line = str(line)
             while '\n' in line or '\r' in line:
-                line.replace('\n', '')
-                line.replace('\r', '')
+                line = line.replace('\n', '')
+                line = line.replace('\r', '')
 
             if not line.startswith('http://') and not line.startswith('https://'):
                 line = 'http://' + line
