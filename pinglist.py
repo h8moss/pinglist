@@ -1,6 +1,7 @@
 import argparse
 from bs4 import BeautifulSoup
 import requests
+from time import sleep
 
 def create_parser():
   parser = argparse.ArgumentParser(
@@ -144,7 +145,9 @@ def main():
   for i in range(len(urls)):
     url = urls[i]
     try:
-      r = requests.get(url)
+      if args.delay > 0:
+        sleep(args.delay)
+      r = requests.get(url, timeout=args.timeout/1000)
       title = get_title(r.content, url)
       status = r.status_code
       status_message = r.reason
