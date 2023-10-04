@@ -123,7 +123,7 @@ def get_formatted_data(data, format):
 
 def main():
 
-    warnings.filterwarnings('ignore', XMLParsedAsHTMLWarning)
+    warnings.filterwarnings('ignore', category=XMLParsedAsHTMLWarning)
 
     parser = create_parser()
     args = parser.parse_args()
