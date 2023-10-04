@@ -58,6 +58,12 @@ def create_parser():
                         type=int,
                         )
 
+    parser.add_argument('--hide-error',
+                        action='store_true',
+                        dest='hideError',
+                        help='If passed, the output will not contain any items that failed to connect'
+                        )
+
     return parser
 
 
@@ -83,7 +89,7 @@ def show_progress(current, total):
         print('')
 
 
-def get_formatted_data(data, format):
+def get_formatted_data(data, format, hideError):
     if format == 'none':
         return ''
 
@@ -109,6 +115,10 @@ def get_formatted_data(data, format):
         status_message = data_item['status_message']
         server = data_item['server']
         content_length = data_item['content_length']
+
+        if hideError and status_code == 0:
+            continue
+
         if format == 'csv':
             text += f'{url},{title},{status_code},{status_message},{server},{content_length}\n'
         elif format == 'list':
@@ -178,9 +188,10 @@ def main():
         if not args.silent:
             show_progress(i+1, len(urls))
 
-    print(get_formatted_data(data, args.format))
+    print(get_formatted_data(data, args.format, args.hideError))
     if args.outputFile != None:
-        args.outputFile.write(get_formatted_data(data, args.outputFormat))
+        args.outputFile.write(get_formatted_data(
+            data, args.outputFormat, args.hideError))
 
 
 if __name__ == '__main__':
