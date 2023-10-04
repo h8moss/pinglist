@@ -54,7 +54,7 @@ def create_parser():
     parser.add_argument('--timeout',
                         default=5000,
                         dest='timeout',
-                        help='Time to pass for request to be discarded',
+                        help='Time to pass for request to be discarded, in milliseconds',
                         type=int,
                         )
 
@@ -153,7 +153,7 @@ def main():
         url = urls[i]
         try:
             if args.delay > 0:
-                sleep(args.delay)
+                sleep(args.delay/1000)
             r = requests.get(url, timeout=args.timeout/1000)
             title = get_title(r.content, url)
             status = r.status_code
