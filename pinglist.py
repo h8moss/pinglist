@@ -6,11 +6,11 @@ def create_parser():
     description="Ping a list of URLS and show output"
   )
 
-  parser.add_argument('urls', action='append', nargs='*', help='Urls to ping')
+  parser.add_argument('urls', nargs='*', help='Urls to ping')
 
   parser.add_argument('-i', '--input',
                       dest='inputFile',
-                      help='file containing a url per line',
+                      help='file containing a url per line to ping',
                       type=argparse.FileType('w')
   )
 
@@ -57,7 +57,29 @@ def create_parser():
 
 def main():
   parser = create_parser()
+  args = parser.parse_args()
 
+  urls = []
+
+  for url in args.urls:
+    url = str(url)
+    if not url.startswith('http://') and not url.startswith('https://'):
+      url = 'http://' + url
+    urls.append(url)
+
+  if args.inputFile != None:
+    with open(args.inputFile, 'r') as f:
+      lines = f.readlines()
+      for line in lines:
+        line = str(line)
+        while '\n' in line or '\r' in line:
+          line.replace('\n', '')
+          line.replace('\r', '')
+
+        if not line.startswith('http://') and not line.startswith('https://'):
+          line = 'http://' + line
+        urls.append(line)
+  
 if __name__ == '__main__':
   main()
 
