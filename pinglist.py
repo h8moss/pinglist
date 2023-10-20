@@ -89,6 +89,22 @@ def show_progress(current, total):
         print('')
 
 
+def escape_chars(string, format):
+    if format == 'none':
+        return string
+    elif format == 'csv':
+        if ',' in string or '\n' in string or '"' in string:
+            # surround with quotes and escape quotes by making them double quotes.
+            return '"' + string.replace('"', '""') + '"'
+        return string
+    elif format == 'md':
+        return string.replace('|', '&#124;')
+    elif format == 'table' or format == 'list':
+        return string.replace('\t', ' ').replace('\n', ' ')
+    else:
+        raise ValueError(f'Unrecognized format: {format}')
+
+
 def get_formatted_data(data, format, hideError):
     if format == 'none':
         return ''
@@ -109,12 +125,12 @@ def get_formatted_data(data, format, hideError):
         raise ValueError(f'Unrecognized format: {format}')
 
     for data_item in data:
-        url = data_item['url']
-        title = data_item['title']
-        status_code = data_item['status']
-        status_message = data_item['status_message']
-        server = data_item['server']
-        content_length = data_item['content_length']
+        url = escape_chars(data_item['url'], format)
+        title = escape_chars(data_item['title'], format)
+        status_code = escape_chars(data_item['status'], format)
+        status_message = escape_chars(data_item['status_message'], format)
+        server = escape_chars(data_item['server'], format)
+        content_length = escape_chars(data_item['content_length'], format)
 
         if hideError and status_code == 0:
             continue
